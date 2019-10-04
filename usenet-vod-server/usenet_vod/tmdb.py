@@ -69,7 +69,7 @@ def details_tmdb_tv(tmdb_id: str):
 
 @tmdb.route("/popular/tv", methods=["GET"])
 def popular_tmdb_tv():
-    props = ("poster_path", "id", "name")
+    props = ("poster_path", "id", "name", "backdrop_path")
     tv = tmdbsimple.TV()
     response = tv.popular(page=request.args.get("page", 1))
     results = [

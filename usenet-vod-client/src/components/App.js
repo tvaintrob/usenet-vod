@@ -1,3 +1,5 @@
+import 'react-id-swiper/lib/styles/css/swiper.css';
+
 import React from 'react';
 import { CssBaseline } from '@material-ui/core';
 import Navigation from 'components/shared/Navigation';
