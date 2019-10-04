@@ -1,70 +1,71 @@
-import React, { useState } from 'react';
-import { useHistory, useParams } from 'react-router';
-import {
-  Dialog,
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  makeStyles,
-} from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
-import Slide from '@material-ui/core/Slide';
-import { useGlobalState } from 'components/GlobalState';
-import { fetchShowDetails } from 'services/tvshows';
+import React, { useState } from "react";
+import { useHistory, useParams } from "react-router";
+import { useGlobalState } from "components/GlobalState";
+import { fetchShowDetails } from "services/tvshows";
+import Loader from "components/shared/Loader";
+import MediaDialog from "components/shared/MediaDialog";
+import Poster from "components/shared/Poster";
+import { makeStyles, Grid, Chip, Typography } from "@material-ui/core";
 
-const useStyles = makeStyles(theme => ({
-  appBar: {
-    position: 'relative',
+const useStyles = makeStyles(() => ({
+  poster: {
+    width: 150,
+    marginTop: 20
   },
-  title: {
-    marginLeft: theme.spacing(2),
-    flex: 1,
-  },
+  genre: { margin: "20px 5px" },
+  overview: { textAlign: "center" }
 }));
 
-const Transition = React.forwardRef(function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
-
 function useShowDetails(id) {
-  const [showsDetails, setShowsDetails] = useGlobalState('shows.details');
+  const [showsDetails, setShowsDetails] = useGlobalState("shows.details", {});
   const [currentShow, setCurrentShow] = useState(showsDetails[id]);
 
   if (currentShow) {
     return [currentShow, false];
   }
 
-  fetchShowDetails(id).then(res => setCurrentShow(res));
-  return [null, true];
+  fetchShowDetails(id).then(res => {
+    setShowsDetails({ ...showsDetails, [id]: res });
+    setCurrentShow(res);
+  });
+
+  return [currentShow, true];
 }
 
 export default function SeriesDialog() {
-  const classes = useStyles();
+  const cls = useStyles();
   const history = useHistory();
   const { id } = useParams();
-  const [open, setOpen] = useState(true);
-  const handleClose = () => setOpen(false);
+  const [showDetails, isLoading] = useShowDetails(id);
+
+  const dialogContent = () => {
+    const imageUrl = `https://image.tmdb.org/t/p/w185/${showDetails.poster_path}`;
+    return (
+      <Grid container direction="column" alignItems="center">
+        <Poster src={imageUrl} className={cls.poster} />
+        <div>
+          {showDetails.genres.slice(0, 3).map(g => (
+            <Chip
+              label={g.name.split("&")[0].trim()}
+              key={g.id}
+              className={cls.genre}
+              color="primary"
+            />
+          ))}
+        </div>
+        <Typography variant="caption" className={cls.overview}>
+          {showDetails.overview}
+        </Typography>
+      </Grid>
+    );
+  };
 
   return (
-    <Dialog
-      fullScreen
-      open={open}
-      onClose={handleClose}
+    <MediaDialog
+      title={isLoading ? "Loading..." : showDetails.name}
       onExited={history.goBack}
-      transitionDuration={400}
-      TransitionComponent={Transition}
     >
-      <AppBar className={classes.appBar} color="default">
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={handleClose}>
-            <CloseIcon />
-          </IconButton>
-          <Typography variant="h6" className={classes.title}>
-            {id}
-          </Typography>
-        </Toolbar>
-      </AppBar>
-    </Dialog>
+      {isLoading ? <Loader fullPage /> : dialogContent()}
+    </MediaDialog>
   );
 }
