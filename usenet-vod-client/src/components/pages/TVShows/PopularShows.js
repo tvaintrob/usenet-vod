@@ -9,15 +9,12 @@ function usePopularShows() {
   const [hasMore, setHasMore] = useState(true);
   const [shows, setShows] = useGlobalState('popularShows', []);
 
-  const fetchShows = page => {
-    console.log(`fetching page: ${page}`);
-    return fetchPopularShows(page)
+  const fetchShows = page => fetchPopularShows(page)
       .then(result => result.map(r => ({ ...r, page })))
       .then(result => [...shows, ...result])
       .then(result => result.sort((a, b) => a.page - b.page))
       .then(result => setShows(result))
       .then(() => setHasMore(page < 1000));
-  };
 
   return [shows, fetchShows, hasMore];
 }

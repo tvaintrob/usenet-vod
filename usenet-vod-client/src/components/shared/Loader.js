@@ -12,7 +12,7 @@ const useStyles = makeStyles(() => ({
   },
   loader: {
     width: '100%',
-    margin: 10,
+    padding: 10,
   },
 }));
 
